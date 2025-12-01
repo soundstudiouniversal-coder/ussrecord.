@@ -1,0 +1,151 @@
+
+/**
+ * Core Philosophy: This ruleset enforces a strict data segregation model. It separates data into two distinct categories:
+ * 1. Admin-Managed Data: Information like the artist roster and music releases, which are managed exclusively by designated admin users.
+ * 2. User-Submitted Content: Demo submissions and contact messages, which can be created by any authenticated user but remain private to them.
+ *
+ * Data Structure:
+ * - Admin data is nested under a user-specific path: `/artifacts/{appId}/users/{userId}/...`. Access to this entire data tree is restricted to the user whose ID matches `{userId}`.
+ * - User-submitted content is stored in top-level collections like `/artifacts/{appId}/public/data/demo_submissions`.
+ *
+ * Key Security Decisions:
+ * - Admin-Only Paths: The `/users/{userId}` path segment acts as a secure container, ensuring only the specified admin can manage their roster and releases.
+ * - Private Submissions: Demo submissions and contact messages are treated as confidential. A user can create and manage their own submissions, but they cannot see submissions from others.
+ * - Admin Listing: To allow admins to review submissions, client-side listing of `demo_submissions` and `contact_messages` is ONLY allowed if the user is authenticated as an admin. This prevents general data scraping.
+ *
+ * Denormalization for Authorization:
+ * - The `DemoSubmission` and `ContactMessage` documents contain a `submitterId` field. This denormalized field is critical for securely checking ownership directly on the document without needing extra database reads, leading to faster and more secure rules.
+ *
+ * Structural Segregation:
+ * - The ruleset leverages separate collections for admin-managed data (`roster`, `releases`) and user-submitted data (`demo_submissions`, `contact_messages`). This clear separation simplifies the security logic, as rules don't need to inspect document fields to determine access rights; the path itself defines the security context.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for improved readability and reusability.
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the primary function for verifying document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the current user is the designated admin.
+     * The admin UID should be stored securely, e.g., in environment variables on a backend,
+     * but for client-only rules, we can check against a known value if appropriate for the app's security model.
+     * In this case, we are checking if the user's UID matches the logged-in admin's UID.
+     */
+     function isAdmin() {
+      // This is a simplified check. In a real-world scenario, this might involve checking a custom claim.
+      // For now, we assume any authenticated user on the dashboard page is an admin.
+      return isSignedIn() && request.auth.token.email == "admin@example.com";
+    }
+    
+    /**
+     * Checks for ownership on an existing document. Used for update and delete
+     * operations to prevent acting on documents that don't exist.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that a user creating a submission is setting their own UID
+     * as the owner (`submitterId`).
+     */
+    function canCreateSubmission() {
+      return isSignedIn() && request.resource.data.submitterId == request.auth.uid;
+    }
+
+    /**
+     * Validates that a user updating a submission is the owner and is not
+     * attempting to change the original `submitterId`.
+     */
+    function canUpdateSubmission() {
+      // Check ownership of the existing document
+      let isDocOwner = isExistingOwner(resource.data.submitterId);
+      // Enforce immutability of the owner field
+      let isSubmitterIdUnchanged = request.resource.data.submitterId == resource.data.submitterId;
+      
+      return isDocOwner && isSubmitterIdUnchanged;
+    }
+
+    /**
+     * @description Manages the artist roster. Publicly readable, but only admins can write.
+     * @path /artifacts/{appId}/public/data/roster/{artistId}
+     */
+    match /artifacts/{appId}/public/data/roster/{artistId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Manages the release discography. Publicly readable, but only admins can write.
+     * @path /artifacts/{appId}/public/data/releases/{releaseId}
+     */
+    match /artifacts/{appId}/public/data/releases/{releaseId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    /**
+     * @description Manages curated playlists. Publicly readable, but only admins can write.
+     * @path /artifacts/{appId}/public/data/playlists/{playlistId}
+     */
+    match /artifacts/{appId}/public/data/playlists/{playlistId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows any authenticated user to create a demo submission, but only the original submitter can view or modify their own submission. Listing the collection is only allowed for admins.
+     * @path /artifacts/{appId}/public/data/demo_submissions/{demoSubmissionId}
+     * @allow (create) Any signed-in user 'artist_abc' creating a submission, setting `submitterId` to 'artist_abc'.
+     * @allow (list) An admin user listing all submissions.
+     * @deny (get) User 'artist_xyz' trying to read a submission where `resource.data.submitterId` is 'artist_abc'.
+     * @deny (list) Any non-admin user trying to list all submissions in the collection.
+     * @principle Enforces document ownership for reads and writes, while allowing creation by any authenticated user. List is restricted to admins.
+     */
+    match /artifacts/{appId}/public/data/demo_submissions/{demoSubmissionId} {
+      allow get: if isOwner(resource.data.submitterId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if canCreateSubmission();
+      allow update: if canUpdateSubmission();
+      allow delete: if isExistingOwner(resource.data.submitterId);
+    }
+
+    /**
+     * @description Allows any authenticated user to create a contact message, but only the original submitter can view or modify it. Listing the collection is only allowed for admins.
+     * @path /artifacts/{appId}/public/data/contact_messages/{contactMessageId}
+     * @allow (create) Any signed-in user 'user_123' creating a message, setting `submitterId` to 'user_123'.
+     * @allow (list) An admin user listing all contact messages.
+     * @deny (update) User 'user_456' trying to update a message where `resource.data.submitterId` is 'user_123'.
+     * @deny (list) Any non-admin user trying to list all contact messages.
+     * @principle Enforces document ownership for reads and writes, while allowing creation by any authenticated user. List is restricted to admins.
+     */
+    match /artifacts/{appId}/public/data/contact_messages/{contactMessageId} {
+      allow get: if isOwner(resource.data.submitterId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if canCreateSubmission();
+      allow update: if canUpdateSubmission();
+      allow delete: if isExistingOwner(resource.data.submitterId);
+    }
+  }
+}

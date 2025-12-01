@@ -1,0 +1,333 @@
+
+{
+  "entities": {
+    "DemoSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DemoSubmission",
+      "type": "object",
+      "description": "Represents a demo submission from an artist.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the demo submission."
+        },
+        "artistName": {
+          "type": "string",
+          "description": "The name of the artist submitting the demo."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email of the artist submitting the demo, for contact purposes.",
+          "format": "email"
+        },
+        "soundcloudLink": {
+          "type": "string",
+          "description": "Link to the artist's demo on SoundCloud.",
+          "format": "uri"
+        },
+        "message": {
+          "type": "string",
+          "description": "A message from the artist about the song (genre, story, context)."
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the demo was submitted.",
+          "format": "date-time"
+        },
+        "submitterId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N DemoSubmission)"
+        }
+      },
+      "required": [
+        "id",
+        "artistName",
+        "email",
+        "message",
+        "submittedAt",
+        "submitterId"
+      ]
+    },
+    "ContactMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactMessage",
+      "type": "object",
+      "description": "Represents a contact message sent by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact message."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person sending the message."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the person sending the message.",
+          "format": "email"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the contact message."
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the message was submitted.",
+          "format": "date-time"
+        },
+        "submitterId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N ContactMessage)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "message",
+        "submittedAt",
+        "submitterId"
+      ]
+    },
+    "Artist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Artist",
+      "type": "object",
+      "description": "Represents an artist in the roster.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the artist."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the artist."
+        },
+        "link": {
+          "type": "string",
+          "description": "Link to the artist's external profile (Spotify, YouTube, etc.).",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the artist was added.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "link",
+        "createdAt"
+      ]
+    },
+    "Release": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Release",
+      "type": "object",
+      "description": "Represents a release (song/EP) in the discography.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the release."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the release."
+        },
+        "artist": {
+          "type": "string",
+          "description": "The name of the artist for this release."
+        },
+        "link": {
+          "type": "string",
+          "description": "Link to the release on streaming platforms (Spotify, SoundCloud, YouTube, etc.).",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the release was added.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "artist",
+        "link",
+        "createdAt"
+      ]
+    },
+    "Playlist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Playlist",
+      "type": "object",
+      "description": "Represents a curated playlist.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the playlist."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the playlist."
+        },
+        "link": {
+          "type": "string",
+          "description": "Link to the playlist on a streaming platform.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the playlist was added.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "link",
+        "createdAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "artifacts/{appId}/users/{userId}/roster/{artistId}",
+        "definition": {
+          "entityName": "Artist",
+          "schema": {
+            "$ref": "#/backend/entities/Artist"
+          },
+          "description": "Stores artist roster data, editable by admins. Includes 'userId' as a path parameter to restrict access to admins only.",
+          "params": [
+            {
+              "name": "appId",
+              "description": "The application ID."
+            },
+            {
+              "name": "userId",
+              "description": "The ID of the admin user."
+            },
+            {
+              "name": "artistId",
+              "description": "The unique identifier for the artist."
+            }
+          ]
+        }
+      },
+      {
+        "path": "artifacts/{appId}/users/{userId}/releases/{releaseId}",
+        "definition": {
+          "entityName": "Release",
+          "schema": {
+            "$ref": "#/backend/entities/Release"
+          },
+          "description": "Stores release discography data, editable by admins. Includes 'userId' as a path parameter to restrict access to admins only.",
+          "params": [
+            {
+              "name": "appId",
+              "description": "The application ID."
+            },
+            {
+              "name": "userId",
+              "description": "The ID of the admin user."
+            },
+            {
+              "name": "releaseId",
+              "description": "The unique identifier for the release."
+            }
+          ]
+        }
+      },
+      {
+        "path": "artifacts/{appId}/users/{userId}/playlists/{playlistId}",
+        "definition": {
+          "entityName": "Playlist",
+          "schema": {
+            "$ref": "#/backend/entities/Playlist"
+          },
+          "description": "Stores curated playlist data, editable by admins. Includes 'userId' as a path parameter to restrict access to admins only.",
+          "params": [
+            {
+              "name": "appId",
+              "description": "The application ID."
+            },
+            {
+              "name": "userId",
+              "description": "The ID of the admin user."
+            },
+            {
+              "name": "playlistId",
+              "description": "The unique identifier for the playlist."
+            }
+          ]
+        }
+      },
+      {
+        "path": "artifacts/{appId}/public/data/demo_submissions/{demoSubmissionId}",
+        "definition": {
+          "entityName": "DemoSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/DemoSubmission"
+          },
+          "description": "Stores demo submissions from artists. This is public data, accessible to everyone.",
+          "params": [
+            {
+              "name": "appId",
+              "description": "The application ID."
+            },
+            {
+              "name": "demoSubmissionId",
+              "description": "The unique identifier for the demo submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "artifacts/{appId}/public/data/contact_messages/{contactMessageId}",
+        "definition": {
+          "entityName": "ContactMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ContactMessage"
+          },
+          "description": "Stores contact messages sent by users. This is public data, accessible to everyone.",
+          "params": [
+            {
+              "name": "appId",
+              "description": "The application ID."
+            },
+            {
+              "name": "contactMessageId",
+              "description": "The unique identifier for the contact message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the Universal Sound Studio application, focusing on demo submissions, contact messages, artist roster, and releases discography. It emphasizes authorization independence, clarity, and secure data access, following the principles of DBAC (Database-Based Access Control) and QAPs (Rules Are Not Filters).\n\n**Authorization Independence:**\n*   Admin-editable data (Artists/Releases/Playlists) are stored under `artifacts/{appId}/users/{userId}`.  This structure makes rules simple because `list` operations can securely operate on the assumption that *all* documents under a given path share the same security requirements.\n*   Public data (DemoSubmissions and ContactMessages) are stored under `artifacts/{appId}/public/data`, eliminating the need for complex authorization checks based on user roles or document content.\n\n**QAPs (Rules are not Filters):**\n*   The segregation of public and admin data ensures that `list` operations are secure and do not require filtering based on authorization.  Admin-specific data (Artists/Releases/Playlists) resides in paths accessible only to authenticated admins.\n\nThis structure enables secure `list` operations and avoids the need for complex filtering in security rules. The path-based ownership for admin data and the segregation of public data ensures that only authorized users can access and modify specific data collections."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "placeholderImages": [
+    {
+      "id": "artist-1",
+      "description": "Close up portrait of a male musician with futuristic glasses in a neon-lit environment.",
+      "imageUrl": "https://images.unsplash.com/photo-1675859427928-fe41277572b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtdXNpY2lhbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2NDUzOTE0MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "musician portrait"
+    },
+    {
+      "id": "artist-2",
+      "description": "A DJ performing in front of a large crowd at a music festival, with stage lights.",
+      "imageUrl": "https://images.unsplash.com/photo-1764014482589-14845f224990?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGolMjBwZXJmb3JtaW5nfGVufDB8fHx8MTc2NDU2NzY3N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dj performing"
+    },
+    {
+      "id": "artist-3",
+      "description": "A female singer performing on stage, seen from a low angle with a microphone.",
+      "imageUrl": "https://images.unsplash.com/photo-1739296385324-288a159fb78a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzaW5nZXIlMjBjbG9zZXVwfGVufDB8fHx8MTc2NDUxOTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "singer closeup"
+    },
+    {
+      "id": "release-1",
+      "description": "Abstract digital art with flowing lines and vibrant colors.",
+      "imageUrl": "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGFydHxlbnwwfHx8fDE3NjQ1MzIzNDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract art"
+    },
+    {
+      "id": "release-2",
+      "description": "A colorful nebula in outer space with stars and galaxies.",
+      "imageUrl": "https://images.unsplash.com/photo-1715147286628-eaae87cc8196?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxnYWxheHklMjBuZWJ1bGF8ZW58MHx8fHwxNzY0NDk5OTYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "galaxy nebula"
+    },
+    {
+      "id": "release-3",
+      "description": "A pattern of glowing geometric shapes and lines on a dark background.",
+      "imageUrl": "https://images.unsplash.com/photo-1667118112013-8dfaa096a85f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxnZW9tZXRyaWMlMjBwYXR0ZXJuc3xlbnwwfHx8fDE3NjQ0ODM3MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "geometric patterns"
+    }
+  ]
+}
